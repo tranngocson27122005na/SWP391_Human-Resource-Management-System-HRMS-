@@ -2,57 +2,6 @@
 
 Hệ thống quản lý nhân sự xây dựng bằng **Java Servlet + JSP + JSTL** theo mô hình **MVC**.
 
----
-
-## 📁 Cấu trúc file
-
-```
-src/java/
-├── controller/admin/
-│   └── UserController.java     # Xử lý: list / view / add+insert
-├── dal/
-│   ├── DBContext.java           # Kết nối Database
-│   ├── UserDAO.java             # getAllUsers | getUserById | insertUser
-│   └── RoleDAO.java             # getAllRoles (dùng cho dropdown form)
-├── model/
-│   └── User.java                # Entity class
-
-web/
-├── views/admin/
-│   ├── user-list.jsp            # Danh sách tất cả nhân sự
-│   ├── user-detail.jsp          # Xem toàn bộ thông tin nhân sự
-│   └── user-form.jsp            # Form thêm nhân sự mới + validate
-├── WEB-INF/
-│   └── web.xml                  # Servlet mapping: /admin/users
-
-README.md
-```
-
----
-
-## 🗄️ Database Schema
-
-```sql
-CREATE TABLE users (
-    user_id    INT PRIMARY KEY AUTO_INCREMENT,
-    full_name  VARCHAR(100) NOT NULL,
-    email      VARCHAR(150) NOT NULL,
-    username   VARCHAR(50)  NOT NULL UNIQUE,
-    password   VARCHAR(255) NOT NULL,
-    role_id    INT          NOT NULL,
-    is_active  TINYINT(1)   DEFAULT 1,
-    create_at  DATETIME     DEFAULT NULL
-);
-
-CREATE TABLE roles (
-    role_id   INT PRIMARY KEY AUTO_INCREMENT,
-    role_name VARCHAR(100) NOT NULL,
-    is_active TINYINT(1)   DEFAULT 1
-);
-```
-
----
-
 ## ✨ Tính năng 1 — Xem danh sách nhân sự
 
 **URL:** `GET /admin/users?action=list`  
