@@ -57,4 +57,43 @@ public class UserDAO {
             e.printStackTrace();
         }
     }
+    // 8 & 11. Lấy thông tin 1 User theo ID
+    public User getUserById(int id) {
+        String sql = "SELECT * FROM users WHERE user_id = ?";
+        try (PreparedStatement st = con.prepareStatement(sql)) {
+            st.setInt(1, id);
+            try (ResultSet rs = st.executeQuery()) {
+                if (rs.next()) {
+                    User u = new User();
+                    u.setUserId(rs.getInt("user_id"));
+                    u.setFullName(rs.getString("full_name"));
+                    u.setEmail(rs.getString("email"));
+                    u.setUsername(rs.getString("username"));
+                    u.setPassword(rs.getString("password"));
+                    u.setRoleId(rs.getInt("role_id"));
+                    u.setActive(rs.getBoolean("is_active"));
+                    return u;
+                }
+            }
+        } catch (SQLException e) {
+            System.out.println("Lỗi getUserById: " + e.getMessage());
+        }
+        return null;
+    }
+
+    // 9. Add new user (Thêm người dùng mới)
+    public void insertUser(User u) {
+        String sql = "INSERT INTO users (full_name, email, username, password, role_id, is_active, create_at) VALUES (?, ?, ?, ?, ?, ?, NOW())";
+        try (PreparedStatement st = con.prepareStatement(sql)) {
+            st.setString(1, u.getFullName());
+            st.setString(2, u.getEmail());
+            st.setString(3, u.getUsername());
+            st.setString(4, u.getPassword());
+            st.setInt(5, u.getRoleId());
+            st.setBoolean(6, u.isActive());
+            st.executeUpdate();
+        } catch (SQLException e) {
+            System.out.println("Lỗi insertUser: " + e.getMessage());
+        }
+    }
 }
