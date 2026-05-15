@@ -1,0 +1,135 @@
+package controller.admin;
+
+import dal.RoleDAO;
+import dal.UserDAO;
+import model.Role;
+import model.User;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.annotation.WebServlet;
+import jakarta.servlet.http.HttpServlet;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+
+public class UserController extends HttpServlet {
+
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        
+        String action = request.getParameter("action");
+        if (action == null) action = "list"; // Mặc định là hiển thị danh sách
+        
+        UserDAO uDao = new UserDAO();
+        RoleDAO rDao = new RoleDAO();
+
+        switch (action) {
+            case "add":
+                // Chuẩn bị danh sách Role để hiển thị vào thẻ <select> (Dropdown)
+                request.setAttribute("listRoles", rDao.getAllRoles());
+                request.getRequestDispatcher("/views/admin/user-form.jsp").forward(request, response);
+                break;
+
+            case "edit":
+                // Lấy thông tin user cũ đẩy lên Form
+                String editIdParam = request.getParameter("id");
+                if (editIdParam == null || editIdParam.isEmpty()) {
+                    response.sendRedirect(request.getContextPath() + "/admin/users?action=list");
+                    return;
+                }
+                int editId = Integer.parseInt(editIdParam);
+                User editUser = uDao.getUserById(editId);
+                if (editUser == null) {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "User không tồn tại.");
+                    return;
+                }
+                request.setAttribute("user", editUser);
+                request.setAttribute("listRoles", rDao.getAllRoles()); // Vẫn cần list Role cho Dropdown
+                request.getRequestDispatcher("/views/admin/user-form.jsp").forward(request, response);
+                break;
+            case "view":
+                // Xử lý Yêu cầu 8: Xem chi tiết
+                String viewIdParam = request.getParameter("id");
+                if (viewIdParam == null || viewIdParam.isEmpty()) {
+                    response.sendRedirect(request.getContextPath() + "/admin/users?action=list");
+                    return;
+                }
+                int viewId = Integer.parseInt(viewIdParam);
+                User viewUser = uDao.getUserById(viewId);
+                if (viewUser == null) {
+                    response.sendError(HttpServletResponse.SC_NOT_FOUND, "User không tồn tại.");
+                    return;
+                }
+                request.setAttribute("user", viewUser);
+                request.getRequestDispatcher("/views/admin/user-detail.jsp").forward(request, response);
+                break;
+
+            case "list":
+            default:
+                // Xử lý Yêu cầu 7: Hiển thị danh sách
+                List<User> listUsers = uDao.getAllUsers();
+                List<Role> listRoles = rDao.getAllRoles(); // Lấy roles để hiển thị tên Role thay vì ID
+                
+                request.setAttribute("listUsers", listUsers);
+                request.setAttribute("listRoles", listRoles);
+                request.getRequestDispatcher("/views/admin/user-list.jsp").forward(request, response);
+                break;
+                
+        }
+    }
+
+    // doPost dùng để xử lý Submit Form (Yêu cầu 9: Add và 11: Update)
+    @Override
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        // Cài đặt encoding để tránh lỗi font tiếng Việt khi submit form
+        request.setCharacterEncoding("UTF-8");
+
+        String action = request.getParameter("action");
+        UserDAO uDao = new UserDAO();
+        RoleDAO rDao = new RoleDAO();
+
+        // Lấy dữ liệu từ form
+        String fullName = request.getParameter("fullName");
+        String email    = request.getParameter("email");
+        int roleId      = Integer.parseInt(request.getParameter("roleId"));
+
+        if ("insert".equals(action)) {
+            String username = request.getParameter("username");
+            String password = request.getParameter("password");
+            boolean isActive = request.getParameter("isActive") != null;
+
+            // === SERVER-SIDE VALIDATION ===
+            String errorMsg = null;
+
+            // Họ tên: không được chứa số hoặc ký tự đặc biệt (chỉ chữ cái Unicode + dấu cách + gạch nối)
+            if (fullName == null || fullName.trim().isEmpty()) {
+                errorMsg = "Họ tên không được để trống.";
+            } else if (!fullName.trim().matches("[\\p{L}\\s\\-]+")) {
+                errorMsg = "Họ tên không được chứa số hoặc ký tự đặc biệt (!@#$...).";
+            }
+            // Username: tối thiểu 2 ký tự, chỉ chữ/số/gạch dưới
+            else if (username == null || username.trim().length() < 2) {
+                errorMsg = "Username phải có ít nhất 2 ký tự.";
+            } else if (!username.trim().matches("[a-zA-Z0-9_]+")) {
+                errorMsg = "Username chỉ được chứa chữ cái, số và gạch dưới (_).";
+            }
+
+            if (errorMsg != null) {
+                // Có lỗi → quay lại form, giữ nguyên dữ liệu đã nhập
+                request.setAttribute("errorMessage", errorMsg);
+                request.setAttribute("listRoles", rDao.getAllRoles());
+                request.getRequestDispatcher("/views/admin/user-form.jsp").forward(request, response);
+                return;
+            }
+
+            // Hợp lệ → lưu vào DB
+            User newUser = new User(0, fullName.trim(), email, username.trim(), password, roleId, isActive, null);
+            uDao.insertUser(newUser);
+
+        }  
+        // Làm xong thì quay lại trang danh sách
+        response.sendRedirect(request.getContextPath() + "/admin/users?action=list");
+    }
+}
