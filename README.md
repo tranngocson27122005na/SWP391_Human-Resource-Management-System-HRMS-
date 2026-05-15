@@ -1,89 +1,200 @@
-# SWP391_Human-Resource-Management-System-HRMS-
-SWP391_GR3_HRMS
-Tính năng 1 — Xem danh sách nhân sự
+# 📋 User Management — Quản lý Nhân sự
+
+Hệ thống quản lý nhân sự xây dựng bằng **Java Servlet + JSP + JSTL** theo mô hình **MVC**.
+
+---
+
+## 📁 Cấu trúc file
+
+```
+src/java/
+├── controller/admin/
+│   └── UserController.java     # Xử lý: list / view / add+insert
+├── dal/
+│   ├── DBContext.java           # Kết nối Database
+│   ├── UserDAO.java             # getAllUsers | getUserById | insertUser
+│   └── RoleDAO.java             # getAllRoles (dùng cho dropdown form)
+├── model/
+│   └── User.java                # Entity class
+
+web/
+├── views/admin/
+│   ├── user-list.jsp            # Danh sách tất cả nhân sự
+│   ├── user-detail.jsp          # Xem toàn bộ thông tin nhân sự
+│   └── user-form.jsp            # Form thêm nhân sự mới + validate
+├── WEB-INF/
+│   └── web.xml                  # Servlet mapping: /admin/users
+
+README.md
+```
+
+---
+
+## 🗄️ Database Schema
+
+```sql
+CREATE TABLE users (
+    user_id    INT PRIMARY KEY AUTO_INCREMENT,
+    full_name  VARCHAR(100) NOT NULL,
+    email      VARCHAR(150) NOT NULL,
+    username   VARCHAR(50)  NOT NULL UNIQUE,
+    password   VARCHAR(255) NOT NULL,
+    role_id    INT          NOT NULL,
+    is_active  TINYINT(1)   DEFAULT 1,
+    create_at  DATETIME     DEFAULT NULL
+);
+
+CREATE TABLE roles (
+    role_id   INT PRIMARY KEY AUTO_INCREMENT,
+    role_name VARCHAR(100) NOT NULL,
+    is_active TINYINT(1)   DEFAULT 1
+);
+```
+
+---
+
+## ✨ Tính năng 1 — Xem danh sách nhân sự
 
 **URL:** `GET /admin/users?action=list`  
-**File JSP:** `web/views/admin/user-list.jsp`  
-**Controller:** `UserController.doGet()` — case `"list"`
+**JSP:** `user-list.jsp`  
+**DAO:** `UserDAO.getAllUsers()`
 
-### Mô tả
-Hiển thị toàn bộ danh sách nhân sự trong hệ thống dưới dạng bảng.
+### Hiển thị
 
-### Thông tin hiển thị
+Bảng danh sách toàn bộ nhân sự trong hệ thống:
 
 | Cột | Mô tả |
 |-----|-------|
-| ID | Mã định danh nội bộ |
-| Họ và Tên | Tên đầy đủ của nhân sự |
-| Username | Tên tài khoản đăng nhập |
+| ID | Mã định danh |
+| Họ và Tên | Tên đầy đủ |
+| Username | Tên tài khoản |
 | Email | Địa chỉ email |
-| Role ID | Vai trò / phân quyền |
-| Trạng thái | `Đang hoạt động` (xanh) / `Bị khóa` (đỏ) |
-| Hành động | Nút **Xem** / **Sửa** / **Khóa · Mở khóa** |
+| Role ID | Vai trò |
+| Trạng thái | `Đang hoạt động` / `Bị khóa` |
+| Hành động | Nút **Xem chi tiết** — Nút **Thêm mới** |
 
-Tính năng 2 — Thêm nhân sự mới
+### Luồng xử lý
 
-**URL:** `GET /admin/users?action=add` (hiển thị form)  
-**URL:** `POST /admin/users` (submit form)  
-**File JSP:** `web/views/admin/user-form.jsp`  
-**Controller:** `UserController.doGet()` — case `"add"` | `UserController.doPost()` — action `"insert"`
+```
+GET /admin/users?action=list
+        ↓
+UserController.doGet() — case "list"
+        ↓
+UserDAO.getAllUsers()
+  SELECT * FROM users
+        ↓
+setAttribute("listUsers", list)
+        ↓
+forward → user-list.jsp
+```
 
-### Mô tả
-Form nhập thông tin để tạo mới một tài khoản nhân sự trong hệ thống.
+---
+
+## ✨ Tính năng 2 — Xem thông tin chi tiết nhân sự
+
+**URL:** `GET /admin/users?action=view&id={userId}`  
+**JSP:** `user-detail.jsp`  
+**DAO:** `UserDAO.getUserById(id)`
+
+### Hiển thị
+
+**Banner hồ sơ:**
+- Avatar chữ cái đầu tên (tự generate)
+- Chấm trạng thái: 🟢 Hoạt động / 🔴 Bị khóa
+- Họ tên, mã nhân viên `EMP0001`
+
+**Bảng thông tin chi tiết:**
+
+| Trường | Dữ liệu |
+|--------|---------|
+| Họ và Tên | `user.fullName` |
+| Email | `user.email` |
+| Mã nhân viên | `EMP` + userId (4 chữ số) |
+| Tài khoản | `user.username` |
+| Trạng thái | Badge xanh / đỏ |
+| Role ID | `user.roleId` |
+
+### Luồng xử lý
+
+```
+GET /admin/users?action=view&id=1
+        ↓
+UserController.doGet() — case "view"
+        ↓
+UserDAO.getUserById(1)
+  SELECT * FROM users WHERE user_id = ?
+  ├─ null  → HTTP 404 Not Found
+  └─ found → setAttribute("user", viewUser)
+        ↓
+forward → user-detail.jsp
+```
+
+---
+
+## ✨ Tính năng 3 — Thêm nhân sự mới
+
+**URL hiển thị form:** `GET /admin/users?action=add`  
+**URL submit:** `POST /admin/users` (hidden field `action=insert`)  
+**JSP:** `user-form.jsp`  
+**DAO:** `UserDAO.insertUser()` | `RoleDAO.getAllRoles()`
 
 ### Các trường nhập liệu
 
-| Trường | Bắt buộc | Mô tả |
-|--------|----------|-------|
-| Họ và Tên | ✅ | Tên đầy đủ |
-| Email | ✅ | Địa chỉ email hợp lệ |
-| Username | ✅ | Tên đăng nhập |
-| Mật khẩu | ✅ | Chỉ hiện khi thêm mới |
+| Trường | Bắt buộc | Ghi chú |
+|--------|----------|---------|
+| Họ và Tên | ✅ | Có validate |
+| Email | ✅ | Kiểu `type="email"` |
+| Username | ✅ | Có validate |
+| Mật khẩu | ✅ | |
 | Vai trò (Role) | ✅ | Dropdown từ bảng `roles` |
-| Kích hoạt ngay | ☑️ | Checkbox — mặc định checked |
+| Kích hoạt ngay | — | Checkbox, mặc định ✔ |
 
 ### Quy tắc Validate
 
-**Client-side (JavaScript — realtime):**
-- Lỗi hiển thị ngay bên dưới field khi đang gõ
-- Chặn submit nếu có field không hợp lệ
-
-**Server-side (Java — lớp bảo vệ thứ 2):**
+Áp dụng **2 lớp** — client-side (JS realtime) và server-side (Java):
 
 | Field | Quy tắc |
 |-------|---------|
-| **Họ và Tên** | Không được để trống · Chỉ chữ cái (kể cả tiếng Việt có dấu), dấu cách, gạch nối · **Không chứa số hoặc ký tự đặc biệt** `(!@#$%^&*...)` |
-| **Username** | **Tối thiểu 2 ký tự** · Chỉ chữ cái `a-z A-Z`, số `0-9`, gạch dưới `_` · Không chứa khoảng trắng hoặc ký tự đặc biệt |
+| **Họ và Tên** | Không để trống · Chỉ chữ cái (gồm tiếng Việt có dấu), dấu cách, gạch nối · **Không chứa số hoặc ký tự đặc biệt** |
+| **Username** | **Tối thiểu 2 ký tự** · Chỉ `a-z`, `A-Z`, `0-9`, `_` · Không khoảng trắng, không ký tự đặc biệt |
 
-> Nếu vi phạm quy tắc validate (kể cả khi JS bị tắt), server sẽ trả form về với thông báo lỗi đỏ và **giữ nguyên dữ liệu đã nhập**.
+**Client-side:** Lỗi hiện ngay dưới field khi đang gõ, chặn submit nếu không hợp lệ.  
+**Server-side:** Nếu JS bị tắt hoặc request giả mạo — server validate lại, trả form về kèm thông báo lỗi đỏ và **giữ nguyên dữ liệu đã nhập**.
 
-Tính năng 3 — Xem chi tiết nhân sự
+### Luồng xử lý
 
-**URL:** `GET /admin/users?action=view&id={userId}`  
-**File JSP:** `web/views/admin/user-detail.jsp`  
-**Controller:** `UserController.doGet()` — case `"view"`
+```
+GET /admin/users?action=add
+        ↓
+UserController.doGet() — case "add"
+        ↓
+RoleDAO.getAllRoles()  →  setAttribute("listRoles", ...)
+        ↓
+forward → user-form.jsp  (chế độ: Thêm mới)
+        ↓
+[Người dùng điền form → nhấn "Tạo tài khoản"]
+        ↓
+POST /admin/users  (action=insert)
+        ↓
+Server-side Validate
+  ├─ Lỗi → forward lại user-form.jsp + hiện errorMessage
+  └─ Hợp lệ → UserDAO.insertUser(newUser)
+              INSERT INTO users (...) VALUES (...)
+        ↓
+redirect → /admin/users?action=list
+```
 
-### Mô tả
-Trang hồ sơ chi tiết của một nhân sự, hiển thị đầy đủ thông tin cá nhân và trạng thái tài khoản.
+---
 
-### Thông tin hiển thị
+## ⚙️ Cài đặt & Chạy
 
-**Banner hồ sơ (gradient):**
-- Avatar chữ cái đầu tên (tự động generate)
-- Chấm trạng thái: 🟢 Hoạt động / 🔴 Bị khóa
-- Họ tên, Role ID, badge mã nhân viên (`EMP0001`)
+**Yêu cầu:** Java 17+ · Jakarta EE 10 · Tomcat 10.x · MySQL
 
-**Bảng thông tin cơ bản:**
+**Cấu hình DB** — sửa `web/WEB-INF/ConnectDB.properties`:
+```properties
+url=jdbc:mysql://localhost:3306/your_database
+username=root
+password=your_password
+```
 
-| Trường | Nguồn dữ liệu |
-|--------|--------------|
-| Họ tên | `user.fullName` |
-| Email | `user.email` |
-| Mã nhân viên | `EMP` + userId format 4 chữ số |
-| Tài khoản (Username) | `user.username` |
-| Trạng thái | `user.active` → badge Xanh/Đỏ |
-| Role ID | `user.roleId` |
-
-**Các nút hành động:**
-- **Chỉnh sửa** → chuyển sang `user-form.jsp` (chế độ Edit)
-- **Khóa / Mở khóa tài khoản** → gọi `?action=toggle&id=...`
+**Chạy:** Clean & Build → Deploy lên Tomcat → truy cập `/login`
