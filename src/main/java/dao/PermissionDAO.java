@@ -6,11 +6,11 @@ import dal.DBContext;
 import model.Permission;
 
 public class PermissionDAO {
-    final private Connection con;
+    private Connection con;
     final private List<Permission> permissions= new Vector<>();
 
-    public PermissionDAO(Connection con) {
-        this.con = con;
+    public PermissionDAO() {
+        con = DBContext.getConnection() ;
     }
 
     public List<Permission> getPermissions() {
@@ -31,16 +31,8 @@ public class PermissionDAO {
     }
     public static void main(String[] args) {
         try {
-            // Lấy connection từ DBContext
-            Connection conn = DBContext.getConnection();
-
-            // Khởi tạo  với connection
-            PermissionDAO dao = new PermissionDAO(conn);
-
-            // Gọi
+            PermissionDAO dao = new PermissionDAO();
             List<Permission> permissions = dao.getPermissions();
-
-            // In kết quả
             for (Permission p : permissions) {
                 System.out.println(p.toString());
             }
