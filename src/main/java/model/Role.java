@@ -3,15 +3,17 @@ package model;
 public class Role {
     private int roleId;
     private String roleName;
-    private boolean isActive;
+    private String description;
+    private String status;
 
     public Role() {
     }
 
-    public Role(int roleId, String roleName, boolean isActive) {
+    public Role(int roleId, String roleName, String description, String status) {
         this.roleId = roleId;
         this.roleName = roleName;
-        this.isActive = isActive;
+        this.description = description;
+        this.status = status;
     }
 
     public int getRoleId() {
@@ -30,19 +32,19 @@ public class Role {
         this.roleName = roleName;
     }
 
-    public boolean isActive() {
-        return isActive;
+    public String getDescription() {
+        return description;
     }
 
-    public void setActive(boolean active) {
-        isActive = active;
+    public void setDescription(String description) {
+        this.description = description;
     }
 
-    @Override
-    public String toString() {
-        return   roleId+
-                ", " + roleName+
-                ", " + isActive;
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
     }
 }
-

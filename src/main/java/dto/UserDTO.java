@@ -1,35 +1,47 @@
-package model;
+package dto;
 
 import java.sql.Timestamp;
 
-public class User {
+public class UserDTO {
     private int userId;
     private String username;
     private String email;
-    private String password;
+    private String passwordHash;
     private String fullName;
     private String phone;
     private String gender;
     private String avatarUrl;
     private String status;
+    private Timestamp lastLoginAt;
     private Timestamp createdAt;
     private Timestamp updatedAt;
+    private Integer createdBy;
+    private Integer updatedBy;
 
-    public User() {
+    // Additional fields for roles
+    private int roleId;
+    private String roleName;
+
+    public UserDTO() {
     }
 
-    public User(int userId, String username, String email, String password, String fullName, String phone, String gender, String avatarUrl, String status, Timestamp createdAt, Timestamp updatedAt) {
+    public UserDTO(int userId, String username, String email, String passwordHash, String fullName, String phone, String gender, String avatarUrl, String status, Timestamp lastLoginAt, Timestamp createdAt, Timestamp updatedAt, Integer createdBy, Integer updatedBy, int roleId, String roleName) {
         this.userId = userId;
         this.username = username;
         this.email = email;
-        this.password = password;
+        this.passwordHash = passwordHash;
         this.fullName = fullName;
         this.phone = phone;
         this.gender = gender;
         this.avatarUrl = avatarUrl;
         this.status = status;
+        this.lastLoginAt = lastLoginAt;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
+        this.createdBy = createdBy;
+        this.updatedBy = updatedBy;
+        this.roleId = roleId;
+        this.roleName = roleName;
     }
 
     public int getUserId() {
@@ -56,12 +68,12 @@ public class User {
         this.email = email;
     }
 
-    public String getPassword() {
-        return password;
+    public String getPasswordHash() {
+        return passwordHash;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
     }
 
     public String getFullName() {
@@ -104,6 +116,14 @@ public class User {
         this.status = status;
     }
 
+    public Timestamp getLastLoginAt() {
+        return lastLoginAt;
+    }
+
+    public void setLastLoginAt(Timestamp lastLoginAt) {
+        this.lastLoginAt = lastLoginAt;
+    }
+
     public Timestamp getCreatedAt() {
         return createdAt;
     }
@@ -118,5 +138,37 @@ public class User {
 
     public void setUpdatedAt(Timestamp updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    public Integer getCreatedBy() {
+        return createdBy;
+    }
+
+    public void setCreatedBy(Integer createdBy) {
+        this.createdBy = createdBy;
+    }
+
+    public Integer getUpdatedBy() {
+        return updatedBy;
+    }
+
+    public void setUpdatedBy(Integer updatedBy) {
+        this.updatedBy = updatedBy;
+    }
+
+    public int getRoleId() {
+        return roleId;
+    }
+
+    public void setRoleId(int roleId) {
+        this.roleId = roleId;
+    }
+
+    public String getRoleName() {
+        return roleName;
+    }
+
+    public void setRoleName(String roleName) {
+        this.roleName = roleName;
     }
 }

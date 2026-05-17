@@ -1,51 +1,31 @@
 package dao;
-import java.sql.*;
-import java.util.Vector;
-import java.util.List;
+
 import dal.DBContext;
 import model.Permission;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PermissionDAO {
-    final private Connection con;
-    final private List<Permission> permissions= new Vector<>();
 
-    public PermissionDAO(Connection con) {
-        this.con = con;
-    }
-
-    public List<Permission> getPermissions() {
+    public List<Permission> getAllPermissions() {
+        List<Permission> list = new ArrayList<>();
         String sql = "SELECT * FROM permissions";
-        try (
-                PreparedStatement ps = con.prepareStatement(sql);
-                ResultSet rs = ps.executeQuery()) {
+        try (Connection conn = DBContext.getConnection();
+             PreparedStatement st = conn.prepareStatement(sql);
+             ResultSet rs = st.executeQuery()) {
             while (rs.next()) {
-                int id = rs.getInt("permission_id");
-                String name = rs.getString("permission_name");
-                String desc = rs.getString("description");
-                permissions.add(new Permission(id, name, desc));
-            }
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-        return permissions;
-    }
-    public static void main(String[] args) {
-        try {
-            // Lấy connection từ DBContext
-            Connection conn = DBContext.getConnection();
-
-            // Khởi tạo  với connection
-            PermissionDAO dao = new PermissionDAO(conn);
-
-            // Gọi
-            List<Permission> permissions = dao.getPermissions();
-
-            // In kết quả
-            for (Permission p : permissions) {
-                System.out.println(p.toString());
+                list.add(new Permission(
+                    rs.getInt("permission_id"),
+                    rs.getString("permission_name"),
+                    rs.getString("permission_code"),
+                    rs.getString("module_name"),
+                    rs.getString("description")
+                ));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return list;
     }
 }
