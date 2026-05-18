@@ -6,13 +6,14 @@ import java.util.List;
 import dal.DBContext;
 import model.User;
 public class UserDAO {
-    private Connection con;
-    final private List<User> users =new Vector<>();
+    final private Connection con;
+    private List<User> users;
 
     public UserDAO() {
         con = DBContext.getConnection();
     }
     public List<User> getUsers() {
+        users =new Vector<>();
         String sql = "SELECT user_id, full_name, email, username, password, role_id, is_active, create_at FROM users";
         try (
                 PreparedStatement ps = con.prepareStatement(sql);

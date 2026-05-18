@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Vector;
 
 public class RolePermissionDAO {
-    private Connection con;
+    final private Connection con;
     public RolePermissionDAO() {
         con = DBContext.getConnection();
     }

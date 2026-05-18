@@ -6,12 +6,13 @@ import dal.DBContext;
 import model.Role;
 public class RoleDAO {
     private final Connection con;
-    final private List<Role> roles= new Vector<>();
+    private List<Role> roles;
 
     public RoleDAO() {
         con = DBContext.getConnection();
     }
     public List<Role> getRoles() {
+        roles= new Vector<>();
         String sql = "SELECT * FROM roles";
         try (
             PreparedStatement ps = con.prepareStatement(sql);
@@ -27,7 +28,17 @@ public class RoleDAO {
         }
         return roles;
     }
-
+    //update roles
+    public void updateRoleActive(int roleId, boolean active) {
+        String sql = "UPDATE roles SET is_active=? WHERE role_id=?";
+        try (PreparedStatement ps = con.prepareStatement(sql)) {
+            ps.setBoolean(1, active);
+            ps.setInt(2, roleId);
+            ps.executeUpdate();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    }
     public static void main(String[] args) {
         try {
             RoleDAO roleDAO = new RoleDAO();

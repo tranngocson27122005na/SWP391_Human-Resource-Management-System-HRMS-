@@ -6,7 +6,7 @@ import dal.DBContext;
 import model.Permission;
 
 public class PermissionDAO {
-    private Connection con;
+    final private Connection con;
     final private List<Permission> permissions= new Vector<>();
 
     public PermissionDAO() {
