@@ -7,17 +7,17 @@ import dal.DBContext;
 import model.User;
 public class UserDAO {
     final private Connection con;
-    final private List<User> users =new Vector<>();
+    private List<User> users;
 
-    public UserDAO(Connection con) {
-        this.con = con;
+    public UserDAO() {
+        con = DBContext.getConnection();
     }
-
     public List<User> getUsers() {
+        users =new Vector<>();
         String sql = "SELECT user_id, full_name, email, username, password, role_id, is_active, create_at FROM users";
         try (
-                PreparedStatement stmt = con.prepareStatement(sql);
-                ResultSet rs = stmt.executeQuery()) {
+                PreparedStatement ps = con.prepareStatement(sql);
+                ResultSet rs = ps.executeQuery()) {
 
             while (rs.next()) {
                 int userId = rs.getInt("user_id");
@@ -43,13 +43,8 @@ public class UserDAO {
     public static void main(String[] args) {
 
         try {
-            // Lấy connection từ DBContext
-            Connection con = DBContext.getConnection();
-
-            UserDAO dao = new UserDAO(con);
+            UserDAO dao = new UserDAO();
             List<User> users = dao.getUsers();
-
-            // In ra danh sách
             for (User u : users) {
                 System.out.println(u.toString());
             }
